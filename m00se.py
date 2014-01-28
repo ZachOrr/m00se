@@ -5,19 +5,7 @@ from redis import StrictRedis
 import requests
 from datetime import datetime
 import pickle
-
-"""
-> r.get("challs")
-=> {
-	"botnet": [
-		{"name": "zachzor", "date": "1-26-2014 18:00:19", "info": "Use JS to send commands in panel"},
-		{"name": "zachzor", "date": "1-27-2014 02:03:29", "info": "We need to do DNS tunneling"}
-	],
-	"web_100": [
-		{"name": "mandatory", "date": "1-27-2014 02:03:29", "info": "Weird. This may be difficult... I'll come back later"}
-	]
-}
-"""
+from json import dumps
 
 class InfoMessage(object):
 	def __init__(self, name, date, info):
@@ -68,7 +56,7 @@ class Moose(object):
 		lines = f.readlines() 
 		if len(lines) < 1:
 			raise Exception("No token in github_oauth_token!")
-		self.headers = {'Authorization': bytes('token %s' % lines[0], 'UTF-8'), 'User-Agent': bytes('ecxinc', 'UTF-8'), 'Content-Type': bytes('application/json', 'UTF-8')}
+		self.headers = {'Authorization': bytes('token %s' % lines[0], 'UTF-8'), 'User-Agent': bytes('ecxinc', 'UTF-8')}
 		f.close()
 
 	def create_gist(self, problem_name, problem_info):
@@ -76,12 +64,12 @@ class Moose(object):
 			"public": True,
 			"files": {
 				"%s.txt" % problem_name: {
-					"content": " ".join("[%s %s] %s" % (info.name, info.date, info.info) for info in problem_info)
+					"content": "hello world",
+					# "content": " ".join("[%s %s] %s" % (info.name, info.date, info.info) for info in problem_info)
 				}
 			}
 		}
-		r = requests.post("https://api.github.com/gists", data=json.dumps(gist), headers=self.headers)
-		print(r.headers)
+		r = requests.post("https://api.github.com/gists", data=dumps(gist), headers=self.headers)
 		print(r.text)
 		if r.status_code != 201:
 			raise GistException("Couldn't create gist!")
