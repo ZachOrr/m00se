@@ -69,20 +69,20 @@ class Moose(object):
 		lines = f.readlines() 
 		if len(lines) < 1:
 			raise Exception("No token in github_oauth_token!")
-		self.headers = {'Authorization': 'token %s' % lines[0], 'User-Agent':'ecxinc', 'Content-Type': 'application/json'}
+		self.headers = {'Authorization': bytes('token %s' % lines[0], 'UTF-8'), 'User-Agent': bytes('ecxinc', 'UTF-8')}
 		f.close()
 
 	def create_gist(self, problem_name, problem_info):
 		gist = {
-			"description": "the description for this gist",
-			"public": False,
+			"public": True,
 			"files": {
 				"%s.txt" % problem_name: {
-					"content": "\n".join("[%s %s] %s" % (info.name, info.date, info.info) for info in problem_info)
+					"content": " ".join("[%s %s] %s" % (info.name, info.date, info.info) for info in problem_info)
 				}
 			}
 		}
 		body = json.dumps(gist)
+		print(body)
 		r = requests.post("https://api.github.com/gists", data=body, headers=self.headers)
 		print(r.text)
 		if r.status_code != 201:
@@ -164,7 +164,7 @@ class Moose(object):
 		if self.r.hlen("challs") == 0:
 			self.send_message(channel, "No challenges")
 		else:
-			self.send_message(channel, "Challenges: %s" % ", ".join(["[%d] %s" % (i, s) for i, s in enumerate(self.r.hkeys("challs"))]))
+			self.send_message(channel, "Challenges: %s" % ", ".join(["[%d] %s" % (i, s.decode('UTF-8')) for i, s in enumerate(self.r.hkeys("challs"))]))
 
 	def calendar(self, username, channel, args):
 		self.send_message(channel, "%s: http://d.pr/Baur" % username)
@@ -179,7 +179,6 @@ class Moose(object):
 		while 1:
 			data = self.irc.recv(4096)
 			username, command, args = self.parsemsg(data)
-			print(username, command, args)
 			if command == "PING":
 				self.irc.send("PONG " + data[1] + '\r\n' )
 			elif command == "PRIVMSG":
