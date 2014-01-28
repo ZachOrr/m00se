@@ -14,9 +14,13 @@ Clone m00se to start working on him
 	git clone git@github.com:ZachOrr/m00se.git
 	cd m00se
 
+m00se runs on Python 3, so we'll need to set up our virtualenv with the Python 3 path. Run this command to find where Python 3 is installed (if it's installed)
+
+	which python3
+
 Set up a virtualenv and install all the necessary dependicies
 
-	virtualenv venv
+	virtualenv -p [/path/to/python3] venv
 	source venv/bin/activate
 	pip install -r requirements.txt
 
