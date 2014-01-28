@@ -4,10 +4,9 @@ ECX Inc's IRC bot - used to save information (links, snippets, etc) on challenge
 
 ## Seting Up
 
-You'll need some dependicies. First, make sure you have pip and virtualenv to start working with
+You'll need some dependicies. First, make sure you have virtualenv installed so we can sandbox dependicies
 
-	sudo apt-get install python-pip
-	sudo pip install virtualenv
+	sudo apt-get install python-virtualenv
 
 Clone m00se to start working on him
 
