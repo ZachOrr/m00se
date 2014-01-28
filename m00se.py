@@ -4,7 +4,6 @@ from socket import socket
 from redis import StrictRedis
 import requests
 from datetime import datetime
-import json
 import pickle
 
 """
@@ -69,7 +68,7 @@ class Moose(object):
 		lines = f.readlines() 
 		if len(lines) < 1:
 			raise Exception("No token in github_oauth_token!")
-		self.headers = {'Authorization': bytes('token %s' % lines[0], 'UTF-8'), 'User-Agent': bytes('ecxinc', 'UTF-8')}
+		self.headers = {'Authorization': bytes('token %s' % lines[0], 'UTF-8'), 'User-Agent': bytes('ecxinc', 'UTF-8'), 'Content-Type': bytes('application/json', 'UTF-8')}
 		f.close()
 
 	def create_gist(self, problem_name, problem_info):
@@ -81,9 +80,8 @@ class Moose(object):
 				}
 			}
 		}
-		body = json.dumps(gist)
-		print(body)
-		r = requests.post("https://api.github.com/gists", data=body, headers=self.headers)
+		r = requests.post("https://api.github.com/gists", data=json.dumps(gist), headers=self.headers)
+		print(r.headers)
 		print(r.text)
 		if r.status_code != 201:
 			raise GistException("Couldn't create gist!")
