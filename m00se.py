@@ -84,20 +84,23 @@ class Moose(object):
 		}
 		body = json.dumps(gist)
 		r = requests.post("https://api.github.com/gists", data=body, headers=self.headers)
-		print r.text
+		print(r.text)
 		if r.status_code != 201:
 			raise GistException("Couldn't create gist!")
 		return r["html_url"]
 
 	def connect(self):
+		print("Connecting...")
 		self.irc.connect((self.HOST, self.PORT))
-		self.irc.send("NICK %s\r\n" % self.NICK)
-		self.irc.send("USER %s %s bla :%s\r\n" % (self.NICK, self.NICK, self.NICK))
-		self.irc.send("JOIN #bottest\r\n")
+		self.irc.send(bytes("NICK %s\r\n" % self.NICK, 'UTF-8'))
+		self.irc.send(bytes("USER %s %s bla :%s\r\n" % (self.NICK, self.NICK, self.NICK), 'UTF-8'))
+		self.irc.send(bytes("JOIN #bottest\r\n", 'UTF-8'))
+		print("Connected!")
 		self.serve_and_possibly_protect()
 
 	def parsemsg(self, s):
 		# Breaks a message from an IRC server into its username, command, and arguments.
+		s = s.decode("utf-8")
 		username, trailing = "", []
 		if not s:
 			return ""
@@ -116,10 +119,10 @@ class Moose(object):
 		return username, command, args
 
 	def send_message(self, channel, message):
-		self.irc.send("PRIVMSG %s :%s\r\n" % (channel, message))
+		self.irc.send(bytes("PRIVMSG %s :%s\r\n" % (channel, message), 'UTF-8'))
 
 	def handle_message(self, username, channel, args):
-		print args
+		print(args)
 		if len(args) < 1:
 			return
 		arg = args[0][1:]
@@ -141,7 +144,7 @@ class Moose(object):
 		try:
 			gist = self.create_gist(args[0], pickle.loads(self.r.hget("challs", args[0])))
 			self.send_message(channel, "%s: %s" % (username, gist))
-		except GistException, e:
+		except GistException:
 			self.send_message(channel, "%s: Unable to create gist" % username)
 
 	def add(self, username, channel, args):
@@ -176,6 +179,7 @@ class Moose(object):
 		while 1:
 			data = self.irc.recv(4096)
 			username, command, args = self.parsemsg(data)
+			print(username, command, args)
 			if command == "PING":
 				self.irc.send("PONG " + data[1] + '\r\n' )
 			elif command == "PRIVMSG":
