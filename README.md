@@ -25,3 +25,4 @@ Set up a virtualenv and install all the necessary dependicies
 * Gists for the same problem name should make a revision
 * Allow indexing by numbers and names
 * Put arguments needed in the dictionary so 1) the help can be printed out better and 2) adding new endpoints is super easy
+* !leet to give someone a 1337 h4ckz0r point so we can synergize our gamification buzzword buzzword
