@@ -56,16 +56,19 @@ class Moose(object):
 		lines = f.readlines() 
 		if len(lines) < 1:
 			raise Exception("No token in github_oauth_token!")
-		self.token = lines[0]
+		self.headers = {"Authorization": "token %s" % lines[0].strip(), "User-Agent": "ecxinc"}
 		f.close()
 
 	def create_gist(self, problem_name, problem_info):
-		gist = {"files": { "%s.txt" % problem_name: { "content": "\n".join("[%s %s] %s" % (info.name, info.date, info.info) for info in problem_info)}}, "public": False}
-		# This is like this because I couldn't get a regular post in Requests to work
-        	s = requests.Session()
-        	s.headers.update({"User-Agent": "ecxinc"})
-        	s.headers.update({"Authorization": "token " + self.token})
-	        r = s.post("https://api.github.com/gists", data=dumps(gist))
+		gist = {
+			"files": {
+				"%s.txt" % problem_name: { 
+					"content": "\n".join("[%s %s] %s" % (info.name, info.date, info.info) for info in problem_info)
+				}
+			},
+			"public": False
+		}
+		r = requests.post("https://api.github.com/gists", headers=self.headers, data=dumps(gist))
 		if r.status_code != 201:
 			raise GistException("Couldn't create gist!")
 		return loads(r.text)["html_url"]
