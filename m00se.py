@@ -2,7 +2,6 @@
 
 from socket import socket
 from redis import StrictRedis
-import requests
 from datetime import datetime
 import pickle
 from json import dumps
@@ -57,7 +56,7 @@ class Moose(object):
 		lines = f.readlines() 
 		if len(lines) < 1:
 			raise Exception("No token in github_oauth_token!")
-		self.headers = (('Authorization', bytes('token %s' % lines[0], 'UTF-8')), ('User-Agent': bytes('ecxinc', 'UTF-8')))
+		self.headers = (('Authorization', 'token %s' % lines[0], ('User-Agent': 'ecxinc')))
 		f.close()
 
 	def create_gist(self, problem_name, problem_info):
@@ -70,15 +69,14 @@ class Moose(object):
 	def connect(self):
 		print("Connecting...")
 		self.irc.connect((self.HOST, self.PORT))
-		self.irc.send(bytes("NICK %s\r\n" % self.NICK, 'UTF-8'))
-		self.irc.send(bytes("USER %s %s bla :%s\r\n" % (self.NICK, self.NICK, self.NICK), 'UTF-8'))
-		self.irc.send(bytes("JOIN #bottest\r\n", 'UTF-8'))
+		self.irc.send("NICK %s\r\n" % self.NICK)
+		self.irc.send("USER %s %s bla :%s\r\n" % (self.NICK, self.NICK, self.NICK))
+		self.irc.send("JOIN #bottest\r\n")
 		print("Connected!")
 		self.serve_and_possibly_protect()
 
 	def parsemsg(self, s):
 		# Breaks a message from an IRC server into its username, command, and arguments.
-		s = s.decode("utf-8")
 		username, trailing = "", []
 		if not s:
 			return ""
@@ -97,7 +95,7 @@ class Moose(object):
 		return username, command, args
 
 	def send_message(self, channel, message):
-		self.irc.send(bytes("PRIVMSG %s :%s\r\n" % (channel, message), 'UTF-8'))
+		self.irc.send("PRIVMSG %s :%s\r\n" % (channel, message))
 
 	def handle_message(self, username, channel, args):
 		print(args)
@@ -142,7 +140,7 @@ class Moose(object):
 		if self.r.hlen("challs") == 0:
 			self.send_message(channel, "No challenges")
 		else:
-			self.send_message(channel, "Challenges: %s" % ", ".join(["[%d] %s" % (i, s.decode('UTF-8')) for i, s in enumerate(self.r.hkeys("challs"))]))
+			self.send_message(channel, "Challenges: %s" % ", ".join(["[%d] %s" % (i, s) for i, s in enumerate(self.r.hkeys("challs"))]))
 
 	def calendar(self, username, channel, args):
 		self.send_message(channel, "%s: http://d.pr/Baur" % username)
@@ -158,7 +156,7 @@ class Moose(object):
 			data = self.irc.recv(4096)
 			username, command, args = self.parsemsg(data)
 			if command == "PING":
-				self.irc.send(bytes("PONG " + data[1] + '\r\n', 'UTF-8'))
+				self.irc.send("PONG " + data[1] + '\r\n')
 			elif command == "PRIVMSG":
 				if len(args[1]) > 0 and args[1][0][0] == "!":
 					self.handle_message(username, args[0], [x.lower() for x in args[1]])

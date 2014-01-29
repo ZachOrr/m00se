@@ -15,7 +15,7 @@ Clone m00se to start working on him
 
 Set up a virtualenv and install all the necessary dependicies
 
-	virtualenv -p `which python3` venv
+	virtualenv -p `which python2` venv
 	source venv/bin/activate
 	pip install -r requirements.txt
 
