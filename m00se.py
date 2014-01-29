@@ -75,7 +75,7 @@ class Moose(object):
 		self.irc.connect((self.HOST, self.PORT))
 		self.irc.send("NICK %s\r\n" % self.NICK)
 		self.irc.send("USER %s %s bla :%s\r\n" % (self.NICK, self.NICK, self.NICK))
-		self.irc.send("JOIN #bottest\r\n")
+		self.irc.send("JOIN #ctf\r\n")
 		print("Connected!")
 		self.serve_and_possibly_protect()
 
