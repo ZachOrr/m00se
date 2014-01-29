@@ -24,3 +24,4 @@ Set up a virtualenv and install all the necessary dependicies
 * Itegrate with Google Calendar to update topic
 * Gists for the same problem name should make a revision
 * Allow indexing by numbers and names
+* Put arguments needed in the dictionary so 1) the help can be printed out better and 2) adding new endpoints is super easy
