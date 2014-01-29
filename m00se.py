@@ -123,9 +123,9 @@ class Moose(object):
 			return
 		try:
 			gist = self.create_gist(args[0], pickle.loads(self.r.hget("challs", args[0])))
-			self.send_message(channel, "%s: %s" % (username, gist))
+			self.send_message(channel, "%s" % gist)
 		except GistException:
-			self.send_message(channel, "%s: Unable to create gist" % username)
+			self.send_message(channel, "Unable to create gist")
 
 	def add(self, username, channel, args):
 		if len(args) < 2:
@@ -138,7 +138,7 @@ class Moose(object):
 			old = pickle.loads(self.r.hget("challs", args[0]))
 			old.append(new_info)
 			self.r.hset("challs", args[0], pickle.dumps(old))
-		self.send_message(channel, "%s: Added!" % username)
+		self.send_message(channel, "Added!")
 
 	def challs(self, username, channel, args):
 		if self.r.hlen("challs") == 0:
@@ -147,7 +147,7 @@ class Moose(object):
 			self.send_message(channel, "Challenges: %s" % ", ".join(["[%d] %s" % (i, s) for i, s in enumerate(self.r.hkeys("challs"))]))
 
 	def calendar(self, username, channel, args):
-		self.send_message(channel, "%s: http://d.pr/Baur" % username)
+		self.send_message(channel, "http://d.pr/Baur")
 
 	def help(self, username, channel, args):
 		if len(args) == 0 or args[0] not in self.commands.keys():
