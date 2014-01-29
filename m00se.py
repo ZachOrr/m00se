@@ -4,8 +4,8 @@ from socket import socket
 from redis import StrictRedis
 from datetime import datetime
 import pickle
-from json import dumps
-import human_curl as requests
+from json import dumps, loads
+import requests
 
 class InfoMessage(object):
 	def __init__(self, name, date, info):
@@ -56,15 +56,19 @@ class Moose(object):
 		lines = f.readlines() 
 		if len(lines) < 1:
 			raise Exception("No token in github_oauth_token!")
-		self.headers = (('Authorization', 'token %s' % lines[0], ('User-Agent': 'ecxinc')))
+		self.token = lines[0]
 		f.close()
 
 	def create_gist(self, problem_name, problem_info):
 		gist = {"files": { "%s.txt" % problem_name: { "content": "\n".join("[%s %s] %s" % (info.name, info.date, info.info) for info in problem_info)}}, "public": False}
-		r = requests.post('http://h.wrttn.me/basic-auth/test_username/test_password', headers=self.headers, data=dumps(gist))
+		# This is like this because I couldn't get a regular post in Requests to work
+        	s = requests.Session()
+        	s.headers.update({"User-Agent": "ecxinc"})
+        	s.headers.update({"Authorization": "token e4e6c37966cdfbd316825ddda4fbb2ec1b48968d"})
+	        r = s.post("https://api.github.com/gists", data=dumps(gist))
 		if r.status_code != 201:
 			raise GistException("Couldn't create gist!")
-		return json.loads(r.content)["http_url"]
+		return loads(r.text)["html_url"]
 
 	def connect(self):
 		print("Connecting...")
