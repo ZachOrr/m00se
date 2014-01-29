@@ -64,7 +64,7 @@ class Moose(object):
 		# This is like this because I couldn't get a regular post in Requests to work
         	s = requests.Session()
         	s.headers.update({"User-Agent": "ecxinc"})
-        	s.headers.update({"Authorization": "token e4e6c37966cdfbd316825ddda4fbb2ec1b48968d"})
+        	s.headers.update({"Authorization": "token " + self.token})
 	        r = s.post("https://api.github.com/gists", data=dumps(gist))
 		if r.status_code != 201:
 			raise GistException("Couldn't create gist!")
