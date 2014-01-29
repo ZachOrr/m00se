@@ -6,6 +6,7 @@ import requests
 from datetime import datetime
 import pickle
 from json import dumps
+import human_curl as requests
 
 class InfoMessage(object):
 	def __init__(self, name, date, info):
@@ -56,24 +57,15 @@ class Moose(object):
 		lines = f.readlines() 
 		if len(lines) < 1:
 			raise Exception("No token in github_oauth_token!")
-		self.headers = {'Authorization': bytes('token %s' % lines[0], 'UTF-8'), 'User-Agent': bytes('ecxinc', 'UTF-8')}
+		self.headers = (('Authorization', bytes('token %s' % lines[0], 'UTF-8')), ('User-Agent': bytes('ecxinc', 'UTF-8')))
 		f.close()
 
 	def create_gist(self, problem_name, problem_info):
-		gist = {
-			"public": True,
-			"files": {
-				"%s.txt" % problem_name: {
-					"content": "hello world",
-					# "content": " ".join("[%s %s] %s" % (info.name, info.date, info.info) for info in problem_info)
-				}
-			}
-		}
-		r = requests.post("https://api.github.com/gists", data=dumps(gist), headers=self.headers)
-		print(r.text)
+		gist = {"files": { "%s.txt" % problem_name: { "content": "\n".join("[%s %s] %s" % (info.name, info.date, info.info) for info in problem_info)}}, "public": False}
+		r = requests.post('http://h.wrttn.me/basic-auth/test_username/test_password', headers=self.headers, data=dumps(gist))
 		if r.status_code != 201:
 			raise GistException("Couldn't create gist!")
-		return r["html_url"]
+		return json.loads(r.content)["http_url"]
 
 	def connect(self):
 		print("Connecting...")
@@ -166,7 +158,7 @@ class Moose(object):
 			data = self.irc.recv(4096)
 			username, command, args = self.parsemsg(data)
 			if command == "PING":
-				self.irc.send("PONG " + data[1] + '\r\n' )
+				self.irc.send(bytes("PONG " + data[1] + '\r\n', 'UTF-8'))
 			elif command == "PRIVMSG":
 				if len(args[1]) > 0 and args[1][0][0] == "!":
 					self.handle_message(username, args[0], [x.lower() for x in args[1]])
