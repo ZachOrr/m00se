@@ -56,6 +56,10 @@ class Moose(object):
 				"text": "!purge - Remove all challenges (zachzor only)",
 				"method": self.purge
 			},
+			"farts": {
+				"text": "!farts - Moose farts",
+				"method": self.farts
+			},
 			"help": {
 				"text": "!help [command] - Get info on how to use a command",
 				"method": self.help
@@ -140,6 +144,9 @@ class Moose(object):
 		except GistException:
 			self.send_message(channel, "Unable to create gist")
 
+	def farts(self, username, channel, args):
+		self.send_message(channel, "Pfffttt")
+
 	def add(self, username, channel, args):
 		if len(args) < 2:
 			self.help(username, channel, ["add"])
@@ -155,7 +162,7 @@ class Moose(object):
 
 	def idhash(self, username, channel, args):
 		if len(args) < 1:
-			self.help(username, channel, ["idhash"])
+			self.help(username, channel, ["id"])
 			return
 		hash_type = HashChecker(args[0])
 		hashzor = hash_type.check_hash()
