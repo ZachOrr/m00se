@@ -156,6 +156,7 @@ class Moose(object):
 	def idhash(self, username, channel, args):
 		if len(args) < 1:
 			self.help(username, channel, ["idhash"])
+			return
 		hash_type = HashChecker(args[0])
 		hashzor = hash_type.check_hash()
 		if hashzor == None:
