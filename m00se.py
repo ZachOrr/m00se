@@ -7,6 +7,7 @@ import pickle
 from json import dumps, loads
 import requests
 from deps.hashid import HashChecker
+from random import randint
 
 class InfoMessage(object):
 	def __init__(self, name, date, info):
@@ -145,7 +146,7 @@ class Moose(object):
 			self.send_message(channel, "Unable to create gist")
 
 	def farts(self, username, channel, args):
-		self.send_message(channel, "Pfffttt")
+		self.send_message(channel, " ".join(list(["pfffttt"] * randint(1, 7))))
 
 	def add(self, username, channel, args):
 		if len(args) < 2:
