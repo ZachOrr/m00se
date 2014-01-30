@@ -6,6 +6,7 @@ from datetime import datetime
 import pickle
 from json import dumps, loads
 import requests
+from deps.hashid import HashChecker
 
 class InfoMessage(object):
 	def __init__(self, name, date, info):
@@ -24,18 +25,21 @@ class Moose(object):
 		self.HOST = HOST
 		self.PORT = PORT
 		self.NICK = NICK
-		self.r = StrictRedis(host='127.0.0.1', port=6379, db=0)
+		self.redis_server = StrictRedis(host='127.0.0.1', port=6379, db=0)
 		self.irc = socket()
 		self.commands = {
 			"challs": {
+				"dep": ["redis_server"],
 				"text": "!challs - Get all the challenges with info",
 				"method": self.challs,
 			},
 			"add": {
+				"dep": ["redis_server"],
 				"text": "!add [challenge_name OR challenge_id] [url or text] - Add some info to a challenge to help others out",
 				"method": self.add,
 			},
 			"get": {
+				"dep": ["redis_server", "headers"],
 				"text": "!get [challenge_name OR challenge_id] - Get a gist with all the info for a challenge",
 				"method": self.get,
 			},
@@ -43,7 +47,12 @@ class Moose(object):
 				"text": "!calendar - Get the calendar url",
 				"method": self.calendar,
 			},
+			"id": {
+				"text": "!id [hash] - Identify a hash",
+				"method": self.idhash
+			},
 			"purge": {
+				"dep": ["redis_server"],
 				"text": "!purge - Remove all challenges (zachzor only)",
 				"method": self.purge
 			},
@@ -74,12 +83,12 @@ class Moose(object):
 		return loads(r.text)["html_url"]
 
 	def connect(self):
-		print("Connecting...")
+		print "Connecting..."
 		self.irc.connect((self.HOST, self.PORT))
 		self.irc.send("NICK %s\r\n" % self.NICK)
 		self.irc.send("USER %s %s bla :%s\r\n" % (self.NICK, self.NICK, self.NICK))
 		self.irc.send("JOIN #ctf\r\n")
-		print("Connected!")
+		print "Connected!"
 		self.serve_and_possibly_protect()
 
 	def parsemsg(self, s):
@@ -102,30 +111,31 @@ class Moose(object):
 		return username, command, args
 
 	def send_message(self, channel, message):
+		print ("PRIVMSG %s :%s\r\n" % (channel, message))
 		self.irc.send("PRIVMSG %s :%s\r\n" % (channel, message))
 
 	def handle_message(self, username, channel, args):
-		print(args)
 		if len(args) < 1:
 			return
 		arg = args[0][1:]
+		print arg
 		if arg in self.commands.keys():
 			self.commands[arg]["method"](username, channel, args[1:])
 
 	def purge(self, username, channel, args):
 		if username == "zachzor":
-			self.r.delete("challs")
+			self.redis_server.delete("challs")
 			self.send_message(channel, "All challenges removed")
 
 	def get(self, username, channel, args):
 		if len(args) < 1:
 			self.help(username, channel, ["get"])
 			return
-		if self.r.hexists("challs", args[0]) == False:
+		if self.redis_server.hexists("challs", args[0]) == False:
 			self.send_message(channel, "%s is not a challenge" % args[0])
 			return
 		try:
-			gist = self.create_gist(args[0], pickle.loads(self.r.hget("challs", args[0])))
+			gist = self.create_gist(args[0], pickle.loads(self.redis_server.hget("challs", args[0])))
 			self.send_message(channel, "%s" % gist)
 		except GistException:
 			self.send_message(channel, "Unable to create gist")
@@ -135,19 +145,29 @@ class Moose(object):
 			self.help(username, channel, ["add"])
 			return
 		new_info = InfoMessage(username, datetime.now().strftime("%m-%d-%Y %H:%M:%S"), " ".join(args[1:]))
-		if self.r.hget("challs", args[0]) == None:
-			self.r.hset("challs", args[0], pickle.dumps([new_info]))
+		if self.redis_server.hget("challs", args[0]) == None:
+			self.redis_server.hset("challs", args[0], pickle.dumps([new_info]))
 		else:
-			old = pickle.loads(self.r.hget("challs", args[0]))
+			old = pickle.loads(self.redis_server.hget("challs", args[0]))
 			old.append(new_info)
-			self.r.hset("challs", args[0], pickle.dumps(old))
+			self.redis_server.hset("challs", args[0], pickle.dumps(old))
 		self.send_message(channel, "Added!")
 
+	def idhash(self, username, channel, args):
+		if len(args) < 1:
+			self.help(username, channel, ["idhash"])
+		hash_type = HashChecker(args[0])
+		hashzor = hash_type.check_hash()
+		if hashzor == None:
+			self.send_message(channel, "Hmm... I'm not sure about that one")
+		else:
+			self.send_message(channel, "That's probably a %s hash" % hashzor)
+
 	def challs(self, username, channel, args):
-		if self.r.hlen("challs") == 0:
+		if self.redis_server.hlen("challs") == 0:
 			self.send_message(channel, "No challenges")
 		else:
-			self.send_message(channel, "Challenges: %s" % ", ".join(["[%d] %s" % (i, s) for i, s in enumerate(self.r.hkeys("challs"))]))
+			self.send_message(channel, "Challenges: %s" % ", ".join(["[%d] %s" % (i, s) for i, s in enumerate(self.redis_server.hkeys("challs"))]))
 
 	def calendar(self, username, channel, args):
 		self.send_message(channel, "http://d.pr/Baur")
