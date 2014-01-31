@@ -155,12 +155,12 @@ class Moose(object):
 			self.send_message("All challenges removed")
 
 	def get(self, challenge_name):
-		if self.redis_server.hexists("challs", challenge_name) == False or self.redis_server.llen <= int(challenge_name[1:]):
+		if self.redis_server.hexists("challs", challenge_name) == False or self.redis_server.hlen("challs") <= challenge_name[1:]:
 			self.send_message("%s is not a challenge" % challenge_name)
 			return
 		if challenge_name[0] == '#':
 			try:
-				gist = self.create_gist(challenge_name, pickle.loads(self.redis_server.lindex("challs", challenge_name[1:])))
+				gist = self.create_gist(challenge_name, pickle.loads(self.redis_server.hget("challs", ["[%d] %s" % (i, s) for i, s in enumerate(self.redis_server.hkeys("challs"))][challenge_name[1:]][1])))
 				self.send_message("%s" % gist)
 			except GistException:
 				self.send_message("Unable to create gist")
