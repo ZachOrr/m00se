@@ -31,19 +31,17 @@ class Moose(object):
 		self.commands = {
 			"challs": {
 				"number_of_args": 0,
-				"dep": ["redis_server"],
 				"text": "!challs - Get all the challenges with info",
 				"method": self.challs,
 			},
 			"add": {
 				"number_of_args": -1,
-				"dep": ["redis_server"],
+				"username": True,
 				"text": "!add [challenge_name OR challenge_id] [url or text] - Add some info to a challenge to help others out",
 				"method": self.add,
 			},
 			"get": {
 				"number_of_args": 1,
-				"dep": ["redis_server", "headers"],
 				"text": "!get [challenge_name OR challenge_id] - Get a gist with all the info for a challenge",
 				"method": self.get,
 			},
@@ -59,7 +57,7 @@ class Moose(object):
 			},
 			"purge": {
 				"number_of_args": 0,
-				"dep": ["redis_server"],
+				"username": True,
 				"text": "!purge - Remove all challenges (zachzor only)",
 				"method": self.purge
 			},
@@ -131,17 +129,23 @@ class Moose(object):
 			return
 		arg = args.pop(0)[1:]
 		if arg == "help" and len(args) == 0:
-			self.help(username, "")
+			self.help("")
 		elif arg in self.commands.keys():
 			arg_num = self.commands[arg]["number_of_args"]
+			params = []
 			if len(args) < arg_num:
-				self.help(username, arg)
+				self.help(arg)
+				return
 			elif arg_num == 0:
-				self.commands[arg]["method"](username)
+				params = []
 			elif arg_num == -1:
-				self.commands[arg]["method"](username, args)
+				params = [args]
 			else:
-				self.commands[arg]["method"](username, *args[:arg_num])
+				params = args[:arg_num]
+			if getattr(self.commands[arg], "username", False):
+				self.commands[arg]["method"](username, *params)
+			else:
+				self.commands[arg]["method"](*params)
 		elif arg in self.commands.keys():
 			self.help(username, arg)
 
@@ -150,7 +154,7 @@ class Moose(object):
 			self.redis_server.delete("challs")
 			self.send_message("All challenges removed")
 
-	def get(self, username, challenge_name):
+	def get(self, challenge_name):
 		if self.redis_server.hexists("challs", challenge_name) == False:
 			self.send_message("%s is not a challenge" % challenge_name)
 			return
@@ -160,7 +164,7 @@ class Moose(object):
 		except GistException:
 			self.send_message("Unable to create gist")
 
-	def farts(self, username):
+	def farts(self):
 		self.send_message(" ".join(list(["pfffttt"] * randint(1, 7))))
 
 	def add(self, username, args):
@@ -176,7 +180,7 @@ class Moose(object):
 			self.redis_server.hset("challs", challenge_name, pickle.dumps(old))
 		self.send_message("Added!")
 
-	def idhash(self, username, hash):
+	def idhash(self, hash):
 		hash_type = HashChecker(hash)
 		hashzor = hash_type.check_hash()
 		if hashzor == None:
@@ -184,16 +188,16 @@ class Moose(object):
 		else:
 			self.send_message("That's probably a %s hash" % hashzor)
 
-	def challs(self, username):
+	def challs(self):
 		if self.redis_server.hlen("challs") == 0:
 			self.send_message("No challenges")
 		else:
 			self.send_message("Challenges: %s" % ", ".join(["[%d] %s" % (i, s) for i, s in enumerate(self.redis_server.hkeys("challs"))]))
 
-	def calendar(self, username):
+	def calendar(self):
 		self.send_message("http://d.pr/Baur")
 
-	def help(self, username, method_name):
+	def help(self, method_name):
 		print method_name
 		if method_name not in self.commands.keys():
 			self.send_message(", ".join(self.commands.keys()))
