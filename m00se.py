@@ -136,7 +136,7 @@ class Moose(object):
 			arg_num = self.commands[arg]["number_of_args"]
 			if len(args) < arg_num:
 				self.help(username, arg)
-			if arg_num == 0:
+			elif arg_num == 0:
 				self.commands[arg]["method"](username)
 			elif arg_num == -1:
 				self.commands[arg]["method"](username, args)
