@@ -30,38 +30,46 @@ class Moose(object):
 		self.irc = socket()
 		self.commands = {
 			"challs": {
+				"number_of_args": 0,
 				"dep": ["redis_server"],
 				"text": "!challs - Get all the challenges with info",
 				"method": self.challs,
 			},
 			"add": {
+				"number_of_args": 2,
 				"dep": ["redis_server"],
 				"text": "!add [challenge_name OR challenge_id] [url or text] - Add some info to a challenge to help others out",
 				"method": self.add,
 			},
 			"get": {
+				"number_of_args": 1,
 				"dep": ["redis_server", "headers"],
 				"text": "!get [challenge_name OR challenge_id] - Get a gist with all the info for a challenge",
 				"method": self.get,
 			},
 			"calendar": {
+				"number_of_args": 0,
 				"text": "!calendar - Get the calendar url",
 				"method": self.calendar,
 			},
 			"id": {
+				"number_of_args": 1,
 				"text": "!id [hash] - Identify a hash",
 				"method": self.idhash
 			},
 			"purge": {
+				"number_of_args": 0,
 				"dep": ["redis_server"],
 				"text": "!purge - Remove all challenges (zachzor only)",
 				"method": self.purge
 			},
 			"farts": {
+				"number_of_args": 0,
 				"text": "!farts - Moose farts",
 				"method": self.farts
 			},
 			"help": {
+				"number_of_args": 1,
 				"text": "!help [command] - Get info on how to use a command",
 				"method": self.help
 			},
@@ -115,77 +123,72 @@ class Moose(object):
 		command = args.pop(0)
 		return username, command, args
 
-	def send_message(self, channel, message):
-		print ("PRIVMSG %s :%s\r\n" % (channel, message))
-		self.irc.send("PRIVMSG %s :%s\r\n" % (channel, message))
+	def send_message(self, message):
+		self.irc.send("PRIVMSG #ctf :%s\r\n" % message)
 
 	def handle_message(self, username, channel, args):
 		if len(args) < 1:
 			return
-		arg = args[0][1:]
-		print arg
-		if arg in self.commands.keys():
-			self.commands[arg]["method"](username, channel, args[1:])
+		arg = args.pop(0)[1:]
+		if arg in self.commands.keys() and len(args[1:]) >= self.commands[arg]["number_of_args"]:
+			params = args[1:self.commands[arg]["number_of_args"]]
+			extra = [" ".join(args[self.commands[arg]["number_of_args"]:])]
+			if extra != [""]:
+				params = params + extra
+			self.commands[arg]["method"](username, *params)
+		elif arg in self.commands.keys():
+			self.help(username, arg)
 
-	def purge(self, username, channel, args):
+	def purge(self, username):
 		if username == "zachzor":
 			self.redis_server.delete("challs")
-			self.send_message(channel, "All challenges removed")
+			self.send_message("All challenges removed")
 
-	def get(self, username, channel, args):
-		if len(args) < 1:
-			self.help(username, channel, ["get"])
-			return
-		if self.redis_server.hexists("challs", args[0]) == False:
-			self.send_message(channel, "%s is not a challenge" % args[0])
+	def get(self, username, challenge_name):
+		if self.redis_server.hexists("challs", challenge_name) == False:
+			self.send_message("%s is not a challenge" % challenge_name)
 			return
 		try:
-			gist = self.create_gist(args[0], pickle.loads(self.redis_server.hget("challs", args[0])))
-			self.send_message(channel, "%s" % gist)
+			gist = self.create_gist(challenge_name, pickle.loads(self.redis_server.hget("challs", challenge_name)))
+			self.send_message("%s" % gist)
 		except GistException:
-			self.send_message(channel, "Unable to create gist")
+			self.send_message("Unable to create gist")
 
-	def farts(self, username, channel, args):
-		self.send_message(channel, " ".join(list(["pfffttt"] * randint(1, 7))))
+	def farts(self, username):
+		self.send_message(" ".join(list(["pfffttt"] * randint(1, 7))))
 
-	def add(self, username, channel, args):
-		if len(args) < 2:
-			self.help(username, channel, ["add"])
-			return
-		new_info = InfoMessage(username, datetime.now().strftime("%m-%d-%Y %H:%M:%S"), " ".join(args[1:]))
-		if self.redis_server.hget("challs", args[0]) == None:
-			self.redis_server.hset("challs", args[0], pickle.dumps([new_info]))
+	def add(self, username, challenge_name, description):
+		new_info = InfoMessage(username, datetime.now().strftime("%m-%d-%Y %H:%M:%S"), " ".join(description))
+		if self.redis_server.hget("challs", challenge_name) == None:
+			self.redis_server.hset("challs", challenge_name, pickle.dumps([new_info]))
 		else:
-			old = pickle.loads(self.redis_server.hget("challs", args[0]))
+			old = pickle.loads(self.redis_server.hget("challs", challenge_name))
 			old.append(new_info)
-			self.redis_server.hset("challs", args[0], pickle.dumps(old))
-		self.send_message(channel, "Added!")
+			self.redis_server.hset("challs", challenge_name, pickle.dumps(old))
+		self.send_message("Added!")
 
-	def idhash(self, username, channel, args):
-		if len(args) < 1:
-			self.help(username, channel, ["id"])
-			return
-		hash_type = HashChecker(args[0])
+	def idhash(self, username, hash):
+		hash_type = HashChecker(hash)
 		hashzor = hash_type.check_hash()
 		if hashzor == None:
-			self.send_message(channel, "Hmm... I'm not sure about that one")
+			self.send_message("Hmm... I'm not sure about that one")
 		else:
-			self.send_message(channel, "That's probably a %s hash" % hashzor)
+			self.send_message("That's probably a %s hash" % hashzor)
 
-	def challs(self, username, channel, args):
+	def challs(self, username):
 		if self.redis_server.hlen("challs") == 0:
-			self.send_message(channel, "No challenges")
+			self.send_message("No challenges")
 		else:
-			self.send_message(channel, "Challenges: %s" % ", ".join(["[%d] %s" % (i, s) for i, s in enumerate(self.redis_server.hkeys("challs"))]))
+			self.send_message("Challenges: %s" % ", ".join(["[%d] %s" % (i, s) for i, s in enumerate(self.redis_server.hkeys("challs"))]))
 
-	def calendar(self, username, channel, args):
-		self.send_message(channel, "http://d.pr/Baur")
+	def calendar(self, username):
+		self.send_message("http://d.pr/Baur")
 
-	def help(self, username, channel, args):
-		if len(args) == 0 or args[0] not in self.commands.keys():
-			self.send_message(channel, ", ".join(self.commands.keys()))
+	def help(self, username, method_name):
+		if method_name not in self.commands.keys():
+			self.send_message(", ".join(self.commands.keys()))
 		else:
-			self.send_message(channel, self.commands[args[0]]["text"])
+			self.send_message(self.commands[method_name]["text"])
 
 	def serve_and_possibly_protect(self):
 		while 1:
