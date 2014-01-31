@@ -133,10 +133,13 @@ class Moose(object):
 		if arg == "help" and len(args) == 0:
 			self.help(username, "")
 		elif arg in self.commands.keys():
-			if len(args) == self.commands[arg]["number_of_args"]:
+			arg_num = self.commands[arg]["number_of_args"]
+			if arg_num == 0:
+				self.commands[arg]["method"](username)
+			elif len(args) == arg_num:
 				self.commands[arg]["method"](username, *args)
-			elif len(args) >= self.commands[arg]["number_of_args"]:
-				params = args[:self.commands[arg]["number_of_args"] - 1] + [" ".join(args[self.commands[arg]["number_of_args"]:])]
+			elif len(args) >= arg_num:
+				params = args[:arg_num - 1] + [" ".join(args[arg_num:])]
 				self.commands[arg]["method"](username, *params)
 		elif arg in self.commands.keys():
 			self.help(username, arg)
