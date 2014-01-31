@@ -1,11 +1,11 @@
 # m00se.py
 
 from socket import socket
-from redis import StrictRedis
+# from redis import StrictRedis
 from datetime import datetime
 import pickle
 from json import dumps, loads
-import requests
+# import requests
 from deps.hashid import HashChecker
 from random import randint
 
@@ -26,7 +26,7 @@ class Moose(object):
 		self.HOST = HOST
 		self.PORT = PORT
 		self.NICK = NICK
-		self.redis_server = StrictRedis(host='127.0.0.1', port=6379, db=0)
+		# self.redis_server = StrictRedis(host='127.0.0.1', port=6379, db=0)
 		self.irc = socket()
 		self.commands = {
 			"challs": {
@@ -74,12 +74,12 @@ class Moose(object):
 				"method": self.help
 			},
 		}
-		f = open("github_oauth_token", "r")
-		lines = f.readlines() 
-		if len(lines) < 1:
-			raise Exception("No token in github_oauth_token!")
-		self.headers = {"Authorization": "token %s" % lines[0].strip(), "User-Agent": "ecxinc"}
-		f.close()
+		# f = open("github_oauth_token", "r")
+		# lines = f.readlines() 
+		# if len(lines) < 1:
+		# 	raise Exception("No token in github_oauth_token!")
+		# self.headers = {"Authorization": "token %s" % lines[0].strip(), "User-Agent": "ecxinc"}
+		# f.close()
 
 	def create_gist(self, problem_name, problem_info):
 		gist = {
@@ -136,6 +136,8 @@ class Moose(object):
 			if extra != [""]:
 				params = params + extra
 			self.commands[arg]["method"](username, *params)
+		elif arg == "help":
+			self.help(username, "")
 		elif arg in self.commands.keys():
 			self.help(username, arg)
 
@@ -185,6 +187,7 @@ class Moose(object):
 		self.send_message("http://d.pr/Baur")
 
 	def help(self, username, method_name):
+		print method_name
 		if method_name not in self.commands.keys():
 			self.send_message(", ".join(self.commands.keys()))
 		else:
