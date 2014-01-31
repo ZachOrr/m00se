@@ -130,7 +130,7 @@ class Moose(object):
 		if len(args) < 1:
 			return
 		arg = args.pop(0)[1:]
-		if arg in self.commands.keys() and len(args[1:]) >= self.commands[arg]["number_of_args"]:
+		if arg in self.commands.keys() and len(args[1:]) == self.commands[arg]["number_of_args"]:
 			params = args[1:self.commands[arg]["number_of_args"]]
 			extra = [" ".join(args[self.commands[arg]["number_of_args"]:])]
 			if extra != [""]:
