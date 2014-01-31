@@ -147,7 +147,7 @@ class Moose(object):
 			else:
 				self.commands[arg]["method"](*params)
 		elif arg in self.commands.keys():
-			self.help(username, arg)
+			self.help(arg)
 
 	def purge(self, username):
 		if username == "zachzor":
@@ -169,7 +169,7 @@ class Moose(object):
 
 	def add(self, username, args):
 		if len(args) < 2:
-			self.help(username, "add")
+			self.help("add")
 		challenge_name, description = args[0], args[1:]
 		new_info = InfoMessage(username, datetime.now().strftime("%m-%d-%Y %H:%M:%S"), " ".join(description))
 		if self.redis_server.hget("challs", challenge_name) == None:
