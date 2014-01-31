@@ -137,7 +137,7 @@ class Moose(object):
 			if arg_num == 0:
 				self.commands[arg]["method"](username)
 			elif arg_num == -1:
-				self.commands[arg]["method"](username, params)
+				self.commands[arg]["method"](username, args)
 			else:
 				self.commands[arg]["method"](username, *args[:arg_num])
 		elif arg in self.commands.keys():
