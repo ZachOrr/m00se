@@ -136,7 +136,7 @@ class Moose(object):
 			if extra != [""]:
 				params = params + extra
 			self.commands[arg]["method"](username, *params)
-		elif arg == "help":
+		elif arg == "help" and len(args) == 0:
 			self.help(username, "")
 		elif arg in self.commands.keys():
 			self.help(username, arg)
