@@ -155,7 +155,7 @@ class Moose(object):
 			self.send_message("All challenges removed")
 
 	def get(self, challenge_name):
-		if self.redis_server.hexists("challs", challenge_name) == False or self.redis_server.hlen("challs") <= challenge_name[1:]:
+		if self.redis_server.hexists("challs", challenge_name) == False or self.redis_server.hlen("challs") <= max(0, int(challenge_name[1:])):
 			self.send_message("%s is not a challenge" % challenge_name)
 			return
 		if challenge_name[0] == '#':
