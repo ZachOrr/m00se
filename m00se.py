@@ -139,7 +139,8 @@ class Moose(object):
 			elif len(args) == arg_num:
 				self.commands[arg]["method"](username, *args)
 			elif len(args) >= arg_num:
-				params = args[:arg_num] + [" ".join(args[arg_num:])]
+				print args
+				params = args[:arg_num - 1] + [" ".join(args[arg_num:])]
 				self.commands[arg]["method"](username, *params)
 		elif arg in self.commands.keys():
 			self.help(username, arg)
