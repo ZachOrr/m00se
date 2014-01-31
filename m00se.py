@@ -142,7 +142,7 @@ class Moose(object):
 				params = [args]
 			else:
 				params = args[:arg_num]
-			if getattr(self.commands[arg], "username", False):
+			if self.commands[arg].get("username", False):
 				self.commands[arg]["method"](username, *params)
 			else:
 				self.commands[arg]["method"](*params)
