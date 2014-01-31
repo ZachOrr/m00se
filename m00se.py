@@ -164,6 +164,8 @@ class Moose(object):
 		self.send_message(" ".join(list(["pfffttt"] * randint(1, 7))))
 
 	def add(self, username, args):
+		if len(args) < 2:
+			return
 		challenge_name, description = args[0], args[1:]
 		new_info = InfoMessage(username, datetime.now().strftime("%m-%d-%Y %H:%M:%S"), " ".join(description))
 		if self.redis_server.hget("challs", challenge_name) == None:
