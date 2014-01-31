@@ -36,7 +36,7 @@ class Moose(object):
 				"method": self.challs,
 			},
 			"add": {
-				"number_of_args": 2,
+				"number_of_args": -1,
 				"dep": ["redis_server"],
 				"text": "!add [challenge_name OR challenge_id] [url or text] - Add some info to a challenge to help others out",
 				"method": self.add,
@@ -136,12 +136,10 @@ class Moose(object):
 			arg_num = self.commands[arg]["number_of_args"]
 			if arg_num == 0:
 				self.commands[arg]["method"](username)
-			elif len(args) == arg_num:
-				self.commands[arg]["method"](username, *args)
-			elif len(args) >= arg_num:
-				print args
-				params = args[:arg_num - 1] + [" ".join(args[arg_num:])]
-				self.commands[arg]["method"](username, *params)
+			elif arg_num == -1:
+				self.commands[arg]["method"](username, params)
+			else:
+				self.commands[arg]["method"](username, *args[:arg_num])
 		elif arg in self.commands.keys():
 			self.help(username, arg)
 
@@ -163,7 +161,8 @@ class Moose(object):
 	def farts(self, username):
 		self.send_message(" ".join(list(["pfffttt"] * randint(1, 7))))
 
-	def add(self, username, challenge_name, description):
+	def add(self, username, args):
+		challenge_name, description = args[0], args[1:]
 		new_info = InfoMessage(username, datetime.now().strftime("%m-%d-%Y %H:%M:%S"), " ".join(description))
 		if self.redis_server.hget("challs", challenge_name) == None:
 			self.redis_server.hset("challs", challenge_name, pickle.dumps([new_info]))
