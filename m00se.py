@@ -150,13 +150,9 @@ class Moose(object):
 			self.help(arg)
 
 	def purge(self, username):
-		self.irc.send("NAMES #ctf\r\n")
-		data = self.irc.recv(4096)
-		if any(username in ops for ops in filter(lambda names: '@' in names, parsemsg(data)[2][3])):
+		if username == "zachzor":
 			self.redis_server.delete("challs")
 			self.send_message("All challenges removed")
-		else:
-			return
 
 	def get(self, challenge_name):
 		if self.redis_server.hexists("challs", challenge_name) == False or self.redis_server.hlen("challs") <= max(0, int(challenge_name[1:])):
