@@ -8,7 +8,6 @@ from json import dumps, loads
 import requests
 from deps.hashid import HashChecker
 from random import randint
-import re
 
 class InfoMessage(object):
 	def __init__(self, name, date, info):
@@ -160,10 +159,10 @@ class Moose(object):
 			try:
 				challenge_number = int(challenge_name[1:])
 			except ValueError:
-				self.send_message("%s is not a valid challenge index" % challenge_name)
+				self.send_message("%s is not a valid challenge id" % challenge_name)
 				return
-			if self.redis_server.hlen("challs") <= challenge_number:
-				self.send_message("%s is not a valid challenge index" % challenge_name)
+			if self.redis_server.hlen("challs") <= challenge_number or challenge_number < 0:
+				self.send_message("%s is not a valid challenge id" % challenge_name)
 				return
 			else:
 				name = [(i, s) for i, s in enumerate(self.redis_server.hkeys("challs"))][challenge_number][1]
