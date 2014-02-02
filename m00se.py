@@ -8,6 +8,7 @@ from json import dumps, loads
 import requests
 from deps.hashid import HashChecker
 from random import randint
+import re
 
 class InfoMessage(object):
 	def __init__(self, name, date, info):
@@ -42,7 +43,7 @@ class Moose(object):
 			},
 			"get": {
 				"number_of_args": 1,
-				"text": "!get [challenge_name OR #challenge_id] - Get a gist with all the info for a challenge",
+				"text": "!get [challenge_name] OR !get #[challenge_id] - Get a gist with all the info for a challenge",
 				"method": self.get,
 			},
 			"calendar": {
@@ -155,21 +156,32 @@ class Moose(object):
 			self.send_message("All challenges removed")
 
 	def get(self, challenge_name):
-		if self.redis_server.hexists("challs", challenge_name) == False or self.redis_server.hlen("challs") <= max(0, int(challenge_name[1:])):
-			self.send_message("%s is not a challenge" % challenge_name)
-			return
-		if challenge_name[0] == '#':
-			try:
-				gist = self.create_gist(challenge_name, pickle.loads(self.redis_server.hget("challs", ["[%d] %s" % (i, s) for i, s in enumerate(self.redis_server.hkeys("challs"))][challenge_name[1:]][1])))
-				self.send_message("%s" % gist)
-			except GistException:
-				self.send_message("Unable to create gist")
+		if bool(re.compile('^[a-z0-9#]+$').match(challenge_name)):
+			if challenge_name[0] == '#':
+				challenge_number = int(re.compile('^#([0-9]+)$').match(challenge_name).group(1))
+				if self.redis_server.hlen("challs") <= challenge_number:
+					self.send_message("%s is not a valid challenge index" % challenge_name)
+					return
+				else:
+					name = [(i, s) for i, s in enumerate(self.redis_server.hkeys("challs"))][challenge_number][1]
+					try:
+						gist = self.create_gist(name, pickle.loads(self.redis_server.hget("challs", name)))
+						self.send_message("%s" % gist)
+					except GistException:
+						self.send_message("Unable to create gist")
+			else:
+				if not self.redis_server.hexists("challs", challenge_name):
+					self.send_message("%s is not a valid challenge name" % challenge_name)
+					return
+				else:
+					try:
+						gist = self.create_gist(challenge_name, pickle.loads(self.redis_server.hget("challs", challenge_name)))
+						self.send_message("%s" % gist)
+					except GistException:
+						self.send_message("Unable to create gist")
 		else:
-			try:
-				gist = self.create_gist(challenge_name, pickle.loads(self.redis_server.hget("challs", challenge_name)))
-				self.send_message("%s" % gist)
-			except GistException:
-				self.send_message("Unable to create gist")
+			self.send_message("!get [challenge_name] OR !get #[challenge_id] - Get a gist with all the info for a challenge")
+			return
 
 	def farts(self):
 		self.send_message(" ".join(list(["pfffttt"] * randint(1, 7))))
