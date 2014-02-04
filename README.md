@@ -46,7 +46,6 @@ To add a new method, add another entry in the commands dictionary. The entries s
 
 * Itegrate with Google Calendar to update topic
 * Gists for the same problem name should make a revision
-* Allow indexing by numbers and names
 * !leet to give someone a 1337 h4ckz0r point so we can synergize our gamification buzzword buzzword
 * !seen to check which problem someone was last seen working on. Maybe do the same thing to see who has contribuited to a problem so far, and mention all contribuitors without needed to look at a gist
 * Write some unit tests to test features
