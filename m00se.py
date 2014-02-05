@@ -86,7 +86,7 @@ class Moose(object):
 				"number_of_args": 1,
 				"text": "!leets [username] - Display the leetness of a particular user",
 				"method": self.leets
-			}
+			},
 			"seen": {
 				"number_of_args": 1,
 				"text": "!seen [username] - Check the last problem someone was working on",
