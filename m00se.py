@@ -1,4 +1,4 @@
-# m00se.py
+#! /usr/bin/env python
 
 from socket import socket
 from redis import StrictRedis
@@ -71,6 +71,16 @@ class Moose(object):
 				"text": "!help [command] - Get info on how to use a command",
 				"method": self.help
 			},
+			"leet": {
+				"number_of_args": 1,
+				"text": "!leet [username] - Increase a user's leetness",
+				"method": self.leet
+			},
+			"leets": {
+				"number_of_args": 1,
+				"text": "!leets [username] - Display the leetness of a particular user",
+				"method": self.leets
+			}
 		}
 		f = open("github_oauth_token", "r")
 		lines = f.readlines() 
@@ -198,6 +208,20 @@ class Moose(object):
 			old.append(new_info)
 			self.redis_server.hset("challs", challenge_name, pickle.dumps(old))
 		self.send_message("Added!")
+
+	def leet(self, user):
+		score = self.redis_server.hget("leet", user)
+		if not score:
+			self.redis_server.hset("leet", user, 1)
+		else:
+			self.redis_server.hincrby("leet", user, 1)
+
+	def leets(self, user):
+		score = self.redis_server.hget("leet", user)
+		if not score:
+			self.send_message("%s isn't leet" % user)
+		else:
+			self.send_message("%s: %s" % (user, score))
 
 	def idhash(self, hash):
 		hash_type = HashChecker(hash)
