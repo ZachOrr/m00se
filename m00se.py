@@ -42,6 +42,7 @@ class Moose(object):
 			},
 			"get": {
 				"number_of_args": 1,
+				"username": True,
 				"text": "!get [challenge_name] OR !get #[challenge_id] - Get a gist with all the info for a challenge",
 				"method": self.get,
 			},
@@ -85,6 +86,11 @@ class Moose(object):
 				"number_of_args": 1,
 				"text": "!leets [username] - Display the leetness of a particular user",
 				"method": self.leets
+			}
+			"seen": {
+				"number_of_args": 1,
+				"text": "!seen [username] - Check the last problem someone was working on",
+				"method": self.seen
 			}
 		}
 		f = open("github_oauth_token", "r")
@@ -167,9 +173,19 @@ class Moose(object):
 	def purge(self, username):
 		if username == "zachzor":
 			self.redis_server.delete("challs")
+			self.redis_server.delete("seen")
 			self.send_message("All challenges removed")
 
-	def get(self, challenge_name):
+	def seen(self, username):
+		if not self.redis_server.hexists("seen", username):
+			self.send_message("%s was not working on a problem" % username)
+		else:
+			self.send_message("%s was working on %s" % (username, self.redis_server.hget("seen", username)))
+
+	def update_seen(self, username, challenge_name):
+		self.redis_server.hset("seen", username, challenge_name)
+
+	def get(self, username, challenge_name):
 		if challenge_name[0] == '#':
 			try:
 				challenge_number = int(challenge_name[1:])
@@ -184,6 +200,7 @@ class Moose(object):
 				try:
 					gist = self.create_gist(name, pickle.loads(self.redis_server.hget("challs", name)))
 					self.send_message("%s" % gist)
+					self.update_seen(username, challenge_name)
 				except GistException:
 					self.send_message("Unable to create gist")
 		else:
@@ -194,6 +211,7 @@ class Moose(object):
 				try:
 					gist = self.create_gist(challenge_name, pickle.loads(self.redis_server.hget("challs", challenge_name)))
 					self.send_message("%s" % gist)
+					self.update_seen(username, challenge_name)
 				except GistException:
 					self.send_message("Unable to create gist")
 
@@ -213,6 +231,7 @@ class Moose(object):
 			old.append(new_info)
 			self.redis_server.hset("challs", challenge_name, pickle.dumps(old))
 		self.send_message("Added!")
+		self.update_seen(username, challenge_name)
 
 	def leet(self, user):
 		score = self.redis_server.hget("leet", user)
