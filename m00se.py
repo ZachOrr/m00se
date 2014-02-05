@@ -76,6 +76,11 @@ class Moose(object):
 				"text": "!leet [username] - Increase a user's leetness",
 				"method": self.leet
 			},
+			"deleet": {
+				"number_of_args": 1,
+				"text": "!deleet [username] - Decrease a user's leetness",
+				"method": self.deleet
+			},
 			"leets": {
 				"number_of_args": 1,
 				"text": "!leets [username] - Display the leetness of a particular user",
@@ -215,6 +220,13 @@ class Moose(object):
 			self.redis_server.hset("leet", user, 1)
 		else:
 			self.redis_server.hincrby("leet", user, 1)
+
+	def deleet(self, user):
+		score = self.redis_server.hget("leet", user)
+		if not score:
+			self.redis_server.hset("leet", user, -1)
+		else:
+			self.redis_server.hincrby("leet", user, -1)
 
 	def leets(self, user):
 		score = self.redis_server.hget("leet", user)
