@@ -46,6 +46,6 @@ To add a new method, add another entry in the commands dictionary. The entries s
 
 * Integrate with Google Calendar to update topic
 * Gists for the same problem name should make a revision
-* !seen to check which problem someone was last seen working on. Maybe do the same thing to see who has contribuited to a problem so far, and mention all contribuitors without needed to look at a gist
+* See who has contribuited to a problem so far
 * Write some unit tests to test features
 * Make redis/Github dependencies optional, but disable features

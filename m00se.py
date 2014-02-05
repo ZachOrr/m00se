@@ -183,7 +183,7 @@ class Moose(object):
 			self.send_message("%s was working on %s" % (username, self.redis_server.hget("seen", username)))
 
 	def update_seen(self, username, challenge_name):
-		self.redis_server.hset("seen", username, challenge_name)
+		self.redis_server.hset("seen", username, challenge_name + " | " + datetime.now().strftime("%m-%d-%Y %H:%M:%S"))
 
 	def get(self, username, challenge_name):
 		if challenge_name[0] == '#':
