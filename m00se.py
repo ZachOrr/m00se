@@ -75,13 +75,15 @@ class Moose(object):
 			},
 			"leet": {
 				"number_of_args": -1,
+				"username": True,
 				"text": "!leet [... stuff|(space stuff)] - Increase stuff's leetness",
-				"method": partial(self.leetincrby, 1)
+				"method": self.leet
 			},
 			"deleet": {
 				"number_of_args": -1,
+				"username": True,
 				"text": "!deleet [... stuff|(space stuff)] - Decrease stuff's leetness",
-				"method": partial(self.leetincrby, -1)
+				"method": self.deleet
 			},
 			"leets": {
 				"number_of_args": -1,
@@ -259,15 +261,34 @@ class Moose(object):
 				capturing = arg.startswith("(") and not arg.endswith(")")
 		return fields
 
-	def leetincrby(self, incr, args):
+	def leetincrby(self, incr, username, args):
 		fields = self.parseleetargs(args)
 		for field in fields:
 			score = self.redis_server.hget("leet", field)
 			if not score:
 				self.redis_server.hset("leet", field, 0)
-			self.redis_server.hincrby("leet", field, incr)
+			if field == username:
+				# Silently deleet on self-leet.
+				self.redis_server.hincrby("leet", field, -1)
+			else:
+				self.redis_server.hincrby("leet", field, incr)
+
+	def leet(self, username, args):
+		if len(args) < 1:
+			self.help("leet")
+		else:
+			self.leetincrby(1, username, args)
+
+	def deleet(self, username, args):
+		if len(args) < 1:
+			self.help("deleet")
+		else:
+			self.leetincrby(-1, username, args)
 
 	def leets(self, args):
+		if len(args) < 1:
+			self.help("leets")
+			return
 		fields = self.parseleetargs(args)
 		messages = []
 		for field in fields:
