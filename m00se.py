@@ -77,13 +77,13 @@ class Moose(object):
 				"number_of_args": -1,
 				"username": True,
 				"text": "!leet [... stuff|(space stuff)] - Increase stuff's leetness",
-				"method": partial(self.leetincrby, 1)
+				"method": self.leet
 			},
 			"deleet": {
 				"number_of_args": -1,
 				"username": True,
 				"text": "!deleet [... stuff|(space stuff)] - Decrease stuff's leetness",
-				"method": partial(self.leetincrby, -1)
+				"method": self.deleet
 			},
 			"leets": {
 				"number_of_args": -1,
@@ -273,7 +273,22 @@ class Moose(object):
 			else:
 				self.redis_server.hincrby("leet", field, incr)
 
+	def leet(self, username, args):
+		if len(args) < 1:
+			self.help("leet")
+		else:
+			self.leetincrby(1, username, args)
+
+	def deleet(self, username, args):
+		if len(args) < 1:
+			self.help("deleet")
+		else:
+			self.leetincrby(-1, username, args)
+
 	def leets(self, args):
+		if len(args) < 1:
+			self.help("leets")
+			return
 		fields = self.parseleetargs(args)
 		messages = []
 		for field in fields:
