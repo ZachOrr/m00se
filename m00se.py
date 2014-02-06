@@ -8,6 +8,7 @@ from json import dumps, loads
 import requests
 from deps.hashid import HashChecker
 from random import randint
+from functools import partial
 
 class InfoMessage(object):
 	def __init__(self, name, date, info):
@@ -73,24 +74,29 @@ class Moose(object):
 				"method": self.help
 			},
 			"leet": {
-				"number_of_args": 1,
-				"text": "!leet [username] - Increase a user's leetness",
-				"method": self.leet
+				"number_of_args": -1,
+				"text": "!leet [... stuff|(space stuff)] - Increase stuff's leetness",
+				"method": partial(self.leetincrby, 1)
 			},
 			"deleet": {
-				"number_of_args": 1,
-				"text": "!deleet [username] - Decrease a user's leetness",
-				"method": self.deleet
+				"number_of_args": -1,
+				"text": "!deleet [... stuff|(space stuff)] - Decrease stuff's leetness",
+				"method": partial(self.leetincrby, -1)
 			},
 			"leets": {
-				"number_of_args": 1,
-				"text": "!leets [username] - Display the leetness of a particular user",
+				"number_of_args": -1,
+				"text": "!leets [... stuff|(space stuff)] - Display the leetness of stuff",
 				"method": self.leets
 			},
 			"seen": {
 				"number_of_args": 1,
 				"text": "!seen [username] - Check the last problem someone was working on",
 				"method": self.seen
+			},
+			"github": {
+				"number_of_args": 0,
+				"text": "!github - Get the github repo url",
+				"method": self.github
 			}
 		}
 		f = open("github_oauth_token", "r")
@@ -233,26 +239,42 @@ class Moose(object):
 		self.send_message("Added!")
 		self.update_seen(username, challenge_name)
 
-	def leet(self, user):
-		score = self.redis_server.hget("leet", user)
-		if not score:
-			self.redis_server.hset("leet", user, 1)
-		else:
-			self.redis_server.hincrby("leet", user, 1)
+	@staticmethod
+	def parseleetargs(args):
+		'''Parse a list of strings, grouping (parenthetical captures).'''
+		# Whether we are in a (...) capture; note that these do not nest.
+		capturing = False
+		fields = []
+		for arg in args:
+			clean = arg.lstrip("(").rstrip(")")
+			if capturing:
+				# Capturing, so append arg to end of previous one.
+				fields[-1] += " " + clean
+				# Continue capturing if this arg doesn't end the capture.
+				capturing = not arg.endswith(")")
+			else:
+				# Not capturing, just append to list.
+				fields.append(clean)
+				# Start capturing if arg begins a capture and doesn't end it.
+				capturing = arg.startswith("(") and not arg.endswith(")")
+		return fields
 
-	def deleet(self, user):
-		score = self.redis_server.hget("leet", user)
-		if not score:
-			self.redis_server.hset("leet", user, -1)
-		else:
-			self.redis_server.hincrby("leet", user, -1)
+	def leetincrby(self, incr, args):
+		fields = parseleetargs(args)
+		for field in fields:
+			score = self.redis_server.hget("leet", field)
+			if not score:
+				self.redis_server.hset("leet", field, 0)
+			self.redis_server.hincrby("leet", field, incr)
 
-	def leets(self, user):
-		score = self.redis_server.hget("leet", user)
-		if not score:
-			self.send_message("%s isn't leet" % user)
-		else:
-			self.send_message("%s: %s" % (user, score))
+	def leets(self, args):
+		fields = parseleetargs(args)
+		for field in fields:
+			score = self.redis_server.hget("leet", user)
+			if not score or score == 0:
+				self.send_message("%s isn't leet" % user)
+			else:
+				self.send_message("%s: %s" % (user, score))
 
 	def idhash(self, hash):
 		hash_type = HashChecker(hash)
@@ -270,6 +292,9 @@ class Moose(object):
 
 	def calendar(self):
 		self.send_message("http://d.pr/Baur")
+
+	def github(self):
+		self.send_message("Fork me at https://github.com/ZachOrr/m00se")
 
 	def help(self, method_name):
 		print method_name
