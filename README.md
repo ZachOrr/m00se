@@ -2,7 +2,7 @@
 
 ECX Inc's IRC bot - used to save information (links, snippets, etc) on challenges we're working on so others can view them. Maybe we'll make it do some more cool things
 
-## Seting Up
+## Setting Up
 
 You'll need some dependencies. First, make sure you have virtualenv installed so we can sandbox dependencies
 
@@ -25,22 +25,32 @@ If you want to test the Gist feature locally, make sure you have a token from Gi
 
 For now, you'll have to comment out the Redis and Github bits if you're not going to make use of them.
 
-## Adding a new method
+## Adding a new command
 
-To add a new method, add another entry in the commands dictionary. The entries should look like this
+To add a new command or related group of commands, create a new python source
+file with an appropriate name in the `commands/` subdirectory, for example:
 
-	"method_name": {
-		"number_of_args": 1,
-		"username": True,
-		"text": "!method_name [the first arg] - Some info about what this does",
-		"method": self.method_name,
-	},
+    commands/
+        new_cmd.py
+        ...
 
-`handle_message` will pass you the number of arguments you specify with `number_of_args`. If `number_of_args` is set to -1, you get passed a list of what the user passed in (split on spaces). If `username` is True, the first argument passed to your function will be a username of the user that called that function. The `text` section should be some helpful text about how your function works. `method` should be the method you define later on. An example method for this function would look like
+Import the `command` decorator from `decorators.py`
 
-	def method_name(self, username, first_arg):
-		# do something
-		self.send_message("I did that thing!")
+    from decorators import command
+
+Then simply define your method and decorate it with options; the first
+parameter passed to your command will always be the instance of `Moose`; any
+other parameters passed will depend on the options you specify:
+
+    @command("new_cmd", number_of_args=0, text="new_cmd")
+    def new_cmd(moose):
+        # do stuff with moose
+
+    @command("uname_cmd", number_of_args=1, text="uname_cmd", username=True)
+    def uname_cmd(moose, username, args):
+        # do stuff with  moose, username, args
+
+`handle_message` will pass you the number of arguments you specify with `number_of_args`. If `number_of_args` is set to -1, you get passed a list of what the user passed in (split on spaces). If `username` is True, the second argument passed to your function will be a username of the user that called that function. The `text` section should be some helpful text about how your function works.
 
 ## To Do
 
