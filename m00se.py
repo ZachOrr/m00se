@@ -75,11 +75,13 @@ class Moose(object):
 			},
 			"leet": {
 				"number_of_args": -1,
+				"username": True,
 				"text": "!leet [... stuff|(space stuff)] - Increase stuff's leetness",
 				"method": partial(self.leetincrby, 1)
 			},
 			"deleet": {
 				"number_of_args": -1,
+				"username": True,
 				"text": "!deleet [... stuff|(space stuff)] - Decrease stuff's leetness",
 				"method": partial(self.leetincrby, -1)
 			},
@@ -259,13 +261,17 @@ class Moose(object):
 				capturing = arg.startswith("(") and not arg.endswith(")")
 		return fields
 
-	def leetincrby(self, incr, args):
+	def leetincrby(self, incr, username, args):
 		fields = self.parseleetargs(args)
 		for field in fields:
 			score = self.redis_server.hget("leet", field)
 			if not score:
 				self.redis_server.hset("leet", field, 0)
-			self.redis_server.hincrby("leet", field, incr)
+			if field == username:
+				# Silently deleet on self-leet.
+				self.redis_server.hincrby("leet", field, -1)
+			else:
+				self.redis_server.hincrby("leet", field, incr)
 
 	def leets(self, args):
 		fields = self.parseleetargs(args)

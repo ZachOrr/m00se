@@ -1,3 +1,3 @@
 # TODO
 
-* Can we make it so you can't !leet yourself?
+* ~~Can we make it so you can't !leet yourself?~~
