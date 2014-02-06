@@ -260,7 +260,7 @@ class Moose(object):
 		return fields
 
 	def leetincrby(self, incr, args):
-		fields = parseleetargs(args)
+		fields = self.parseleetargs(args)
 		for field in fields:
 			score = self.redis_server.hget("leet", field)
 			if not score:
@@ -268,13 +268,15 @@ class Moose(object):
 			self.redis_server.hincrby("leet", field, incr)
 
 	def leets(self, args):
-		fields = parseleetargs(args)
+		fields = self.parseleetargs(args)
+		messages = []
 		for field in fields:
-			score = self.redis_server.hget("leet", user)
-			if not score or score == 0:
-				self.send_message("%s isn't leet" % user)
+			score = self.redis_server.hget("leet", field)
+			if not score:
+				messages.append("%s isn't leet" % field)
 			else:
-				self.send_message("%s: %s" % (user, score))
+				messages.append("%s: %s" % (field, score))
+		self.send_message(", ".join(messages))
 
 	def idhash(self, hash):
 		hash_type = HashChecker(hash)
