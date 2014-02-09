@@ -50,3 +50,4 @@ To add a new method, add another entry in the commands dictionary. The entries s
 * Write some unit tests to test features
 * Make redis/Github dependencies optional, but disable features
 * !leetest to show the leetest of them all
+* Fix the issue where it downcases everyhing you !add
