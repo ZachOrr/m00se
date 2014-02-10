@@ -45,8 +45,6 @@ To add a new method, add another entry in the commands dictionary. The entries s
 ## To Do
 
 * Integrate with Google Calendar to update topic
-* Gists for the same problem name should make a revision
-* See who has contribuited to a problem so far
 * Write some unit tests to test features
 * Make redis/Github dependencies optional, but disable features
 * !leetest to show the leetest of them all
