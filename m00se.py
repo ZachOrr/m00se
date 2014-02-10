@@ -354,7 +354,7 @@ class Moose(object):
 				self.irc.send("PONG " + data[1] + '\r\n')
 			elif command == "PRIVMSG":
 				if len(args[1]) > 0 and args[1][0][0] == "!":
-					self.handle_message(username, lower(args[0]), [x for x in args[1]])
+					self.handle_message(username, args[0].lower(), [x for x in args[1]])
 
 def main():
 	m = Moose("127.0.0.1", 6667, "m00se")
