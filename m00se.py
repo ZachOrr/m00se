@@ -129,7 +129,7 @@ class Moose(object):
 				break
 		if not r:
 			r = requests.post("https://api.github.com/gists", headers=self.headers, data=dumps(gist))
-		if r.status_code != 201 || r.status_code != 200:
+		if r.status_code != 201 or r.status_code != 200:
 			raise GistException("Couldn't create gist!")
 		return loads(r.text)["html_url"]
 
