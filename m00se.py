@@ -63,6 +63,12 @@ class Moose(object):
 				"text": "!purge - Remove all challenges (zachzor only)",
 				"method": self.purge
 			},
+			"delete_gists": {
+				"number_of_args": 0,
+				"username": True,
+				"text": "!delete_gists - Delete all the gists (zachzor only)",
+				"method": self.delete_gists
+			},
 			"farts": {
 				"number_of_args": 0,
 				"text": "!farts - Moose farts",
@@ -108,6 +114,14 @@ class Moose(object):
 		self.headers = {"Authorization": "token %s" % lines[0].strip(), "User-Agent": "ecxinc"}
 		f.close()
 
+	def delete_gists(self, username):
+		if username != "zachzor":
+			return
+		r = requests.get("https://api.github.com/gists", headers=self.headers)
+		for gist in r.json():
+			requests.delete("https://api.github.com/gists/%s" % gist["id"], headers=self.headers)
+		self.send_message("All gists deleted")
+
 	def create_gist(self, problem_name, problem_info):
 		gist = {
 			"files": {
@@ -117,7 +131,13 @@ class Moose(object):
 			},
 			"public": False
 		}
-		r = requests.post("https://api.github.com/gists", headers=self.headers, data=dumps(gist))
+		r = None
+		for g in requests.get("https://api.github.com/gists", headers=self.headers).json():
+			if "%s.txt" % problem_name in  g["files"].keys():
+				r = requests.patch("https://api.github.com/gists/%s" % g["id"], headers=self.headers, data=dumps(gist))
+				break
+		if not r:
+			r = requests.post("https://api.github.com/gists", headers=self.headers, data=dumps(gist))
 		if r.status_code != 201:
 			raise GistException("Couldn't create gist!")
 		return loads(r.text)["html_url"]
