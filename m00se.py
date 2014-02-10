@@ -63,12 +63,6 @@ class Moose(object):
 				"text": "!purge - Remove all challenges (zachzor only)",
 				"method": self.purge
 			},
-			"delete_gists": {
-				"number_of_args": 0,
-				"username": True,
-				"text": "!delete_gists - Delete all the gists (zachzor only)",
-				"method": self.delete_gists
-			},
 			"farts": {
 				"number_of_args": 0,
 				"text": "!farts - Moose farts",
@@ -114,9 +108,7 @@ class Moose(object):
 		self.headers = {"Authorization": "token %s" % lines[0].strip(), "User-Agent": "ecxinc"}
 		f.close()
 
-	def delete_gists(self, username):
-		if username != "zachzor":
-			return
+	def delete_gists(self):
 		r = requests.get("https://api.github.com/gists", headers=self.headers)
 		for gist in r.json():
 			requests.delete("https://api.github.com/gists/%s" % gist["id"], headers=self.headers)
@@ -202,6 +194,7 @@ class Moose(object):
 		if username == "zachzor":
 			self.redis_server.delete("challs")
 			self.redis_server.delete("seen")
+			self.delete_gists()
 			self.send_message("All challenges removed")
 
 	def seen(self, username):
