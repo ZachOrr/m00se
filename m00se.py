@@ -112,7 +112,6 @@ class Moose(object):
 		r = requests.get("https://api.github.com/gists", headers=self.headers)
 		for gist in r.json():
 			requests.delete("https://api.github.com/gists/%s" % gist["id"], headers=self.headers)
-		self.send_message("All gists deleted")
 
 	def create_gist(self, problem_name, problem_info):
 		gist = {
@@ -130,7 +129,7 @@ class Moose(object):
 				break
 		if not r:
 			r = requests.post("https://api.github.com/gists", headers=self.headers, data=dumps(gist))
-		if r.status_code != 201:
+		if r.status_code != 201 || r.status_code != 200:
 			raise GistException("Couldn't create gist!")
 		return loads(r.text)["html_url"]
 
