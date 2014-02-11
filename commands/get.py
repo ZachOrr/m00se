@@ -1,5 +1,5 @@
 from decorators import command
-from deps import InfoMessage, GistException
+from deps.GistException import GistException
 from json import dumps
 from pickle import loads
 from deps.helpers import update_seen
