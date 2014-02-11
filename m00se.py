@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from socket import socket
-from redis import StrictRedis
+# from redis import StrictRedis
 from datetime import datetime
 import pickle
 from json import dumps, loads
@@ -9,6 +9,7 @@ import requests
 from deps.hashid import HashChecker
 from random import randint
 from functools import partial
+from commands import *
 
 class InfoMessage(object):
 	def __init__(self, name, date, info):
@@ -22,12 +23,13 @@ class GistException(Exception):
 		Exception.__init__(self, message)
 
 class Moose(object):
+
 	def __init__(self, HOST, PORT, NICK):
 		super(Moose, self).__init__()
 		self.HOST = HOST
 		self.PORT = PORT
 		self.NICK = NICK
-		self.redis_server = StrictRedis(host='127.0.0.1', port=6379, db=0)
+		# self.redis_server = StrictRedis(host='127.0.0.1', port=6379, db=0)
 		self.irc = socket()
 		self.commands = {
 			"challs": {
@@ -81,6 +83,7 @@ class Moose(object):
 			},
 			"deleet": {
 				"number_of_args": -1,
+	
 				"username": True,
 				"text": "!deleet [... stuff|(space stuff)] - Decrease stuff's leetness",
 				"method": self.deleet
@@ -101,12 +104,14 @@ class Moose(object):
 				"method": self.github
 			}
 		}
-		f = open("github_oauth_token", "r")
-		lines = f.readlines() 
-		if len(lines) < 1:
-			raise Exception("No token in github_oauth_token!")
-		self.headers = {"Authorization": "token %s" % lines[0].strip(), "User-Agent": "ecxinc"}
-		f.close()
+		# Pull in commands defined in package `commands`.
+		self.commands.update(registry.commands)
+		# f = open("github_oauth_token", "r")
+		# lines = f.readlines() 
+		# if len(lines) < 1:
+		#   raise Exception("No token in github_oauth_token!")
+		# self.headers = {"Authorization": "token %s" % lines[0].strip(), "User-Agent": "ecxinc"}
+		# f.close()
 
 	def delete_gists(self):
 		r = requests.get("https://api.github.com/gists", headers=self.headers)
@@ -138,7 +143,7 @@ class Moose(object):
 		self.irc.connect((self.HOST, self.PORT))
 		self.irc.send("NICK %s\r\n" % self.NICK)
 		self.irc.send("USER %s %s bla :%s\r\n" % (self.NICK, self.NICK, self.NICK))
-		self.irc.send("JOIN #ctf\r\n")
+		self.irc.send("JOIN #bots\r\n")
 		print "Connected!"
 		self.serve_and_possibly_protect()
 
@@ -162,7 +167,7 @@ class Moose(object):
 		return username, command, args
 
 	def send_message(self, message):
-		self.irc.send("PRIVMSG #ctf :%s\r\n" % message)
+		self.irc.send("PRIVMSG #bots :%s\r\n" % message)
 
 	def handle_message(self, username, channel, args):
 		if len(args) < 1:
@@ -183,11 +188,14 @@ class Moose(object):
 			else:
 				params = args[:arg_num]
 			if self.commands[arg].get("username", False):
-				self.commands[arg]["method"](username, *params)
+				res = self.commands[arg]["method"](username, *params)
 			else:
-				self.commands[arg]["method"](*params)
+				res = self.commands[arg]["method"](*params)
 		elif arg in self.commands.keys():
 			self.help(arg)
+
+	def debug(self, thing):
+		print thing
 
 	def purge(self, username):
 		if username == "zachzor":
@@ -332,6 +340,7 @@ class Moose(object):
 		self.send_message("Fork me at https://github.com/ZachOrr/m00se")
 
 	def help(self, method_name):
+		print "Hit in here!"
 		print method_name
 		if method_name not in self.commands.keys():
 			self.send_message(", ".join(self.commands.keys()))
@@ -349,7 +358,7 @@ class Moose(object):
 					self.handle_message(username, args[0].lower(), [x for x in args[1]])
 
 def main():
-	m = Moose("127.0.0.1", 6667, "m00se")
+	m = Moose("127.0.0.1", 6667, "m00se-modular")
 	m.connect()
 
 if __name__ == '__main__':
