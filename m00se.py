@@ -92,7 +92,7 @@ class Moose(object):
 					self.handle_message(username, args[0].lower(), [x for x in args[1]])
 
 def main():
-	m = Moose("127.0.0.1", 6667, "m00se-modular")
+	m = Moose("127.0.0.1", 6667, "m00se-modular", "bots")
 	m.connect()
 
 if __name__ == '__main__':
