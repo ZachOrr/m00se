@@ -4,8 +4,8 @@ from datetime import datetime
 from deps.helpers import update_seen
 from pickle import dumps, loads
 
-@command("add", argc=-1, text="!add [challenge_name OR challenge_id] [url or text] - Add some info to a challenge to help others out")
-def add(moose, args):
+@command("add", argc=-1, text="!add [challenge_name OR challenge_id] [url or text] - Add some info to a challenge to help others out", username=True)
+def add(moose, username, args):
 	if len(args) < 2:
 		moose.cmd("help", "add")
 		return
