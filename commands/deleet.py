@@ -1,5 +1,5 @@
 from decorators import command
-from deps.helpers import leetincrbys
+from deps.helpers import leetincrby
 
 @command("deleet", argc=-1, text="!deleet [... stuff|(space stuff)] - Decrease stuff's leetness", username=True)
 def deleet(moose, username, args):

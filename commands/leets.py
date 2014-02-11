@@ -1,5 +1,5 @@
 from decorators import command
-from deps.leet_utils import parseleetargs
+from deps.helpers import parseleetargs
 
 @command("leets", argc=-1, text="!leets [... stuff|(space stuff)] - Display the leetness of stuff")
 def leets(moose, args):

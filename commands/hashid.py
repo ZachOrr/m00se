@@ -1,5 +1,5 @@
 from decorators import command
-from deps import HashChecker
+from deps.hashid import HashChecker
 
 @command("id", argc=1, text="!id [hash] - Identify a hash")
 def idhash(moose, hash):
