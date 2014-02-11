@@ -6,7 +6,6 @@ __all__ += [
 'calendar',
 'challs',
 'deleet',
-'foo',
 'get',
 'github',
 'hashid',
