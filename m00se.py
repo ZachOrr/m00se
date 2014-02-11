@@ -61,12 +61,12 @@ class Moose(object):
 			return
 		arg = args.pop(0)[1:]
 		if arg == "help" and len(args) == 0:
-			self.help("")
+			self.cmd("help", "")
 		elif arg in self.commands.keys():
 			arg_num = self.commands[arg]["argc"]
 			params = []
 			if len(args) < arg_num:
-				self.help(arg)
+				self.cmd("help", arg)
 				return
 			elif arg_num == 0:
 				params = []
@@ -75,11 +75,14 @@ class Moose(object):
 			else:
 				params = args[:arg_num]
 			if self.commands[arg].get("username", False):
-				res = self.commands[arg]["method"](username, *params)
+				self.cmd(arg, username, *params)
 			else:
-				res = self.commands[arg]["method"](self, *params)
+				self.cmd(arg, *params)
 		elif arg in self.commands.keys():
-			self.help(arg)
+			self.cmd("help", arg)
+
+	def cmd(self, name, *args):
+		self.commands[name]['method'](self, *args)
 
 	def serve_and_possibly_protect(self):
 		while 1:

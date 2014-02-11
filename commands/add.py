@@ -7,7 +7,7 @@ from pickle import dumps, loads
 @command("add", argc=-1, text="!add [challenge_name OR challenge_id] [url or text] - Add some info to a challenge to help others out")
 def add(moose, args):
 	if len(args) < 2:
-		moose.help("add")
+		moose.cmd("help", "add")
 		return
 	challenge_name, description = args[0], args[1:]
 	new_info = InfoMessage(username, datetime.now().strftime("%m-%d-%Y %H:%M:%S"), " ".join(description))
