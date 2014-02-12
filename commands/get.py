@@ -5,8 +5,9 @@ from pickle import loads
 from deps.helpers import update_seen
 import requests
 
-@command("get", argc=-1, text="!get [challenge_name] OR !get #[challenge_id] - Get a gist with all the info for a challenge", username=True)
+@command("get", argc=1, text="!get [challenge_name] OR !get #[challenge_id] - Get a gist with all the info for a challenge", username=True)
 def get(moose, username, challenge_name):
+	print "Hit here"
 	if challenge_name[0] == '#':
 		try:
 			challenge_number = int(challenge_name[1:])

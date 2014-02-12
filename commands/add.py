@@ -1,5 +1,5 @@
 from decorators import command
-from deps import InfoMessage
+from deps.InfoMessage import InfoMessage
 from datetime import datetime
 from deps.helpers import update_seen
 from pickle import dumps, loads

@@ -60,6 +60,7 @@ class Moose(object):
 		if len(args) < 1:
 			return
 		arg = args.pop(0)[1:]
+		# boolean waterslide
 		if arg == "help" and len(args) == 0:
 			self.cmd("help", "")
 		elif arg in self.commands.keys():
@@ -78,8 +79,6 @@ class Moose(object):
 				self.cmd(arg, username, *params)
 			else:
 				self.cmd(arg, *params)
-		elif arg in self.commands.keys():
-			self.cmd("help", arg)
 
 	def cmd(self, name, *args):
 		self.commands[name]['method'](self, *args)

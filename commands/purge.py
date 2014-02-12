@@ -2,7 +2,7 @@ from decorators import command
 import requests
 
 @command("purge", argc=0, text="!purge - Remove all challenges (zachzor only)", username=True)
-def purge(moose):
+def purge(moose, username):
 	if username == "zachzor":
 		moose.redis_server.delete("challs")
 		moose.redis_server.delete("seen")
