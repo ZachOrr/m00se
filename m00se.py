@@ -83,7 +83,10 @@ class Moose(object):
 				self.cmd(arg, *params)
 
 	def cmd(self, name, *args):
-		self.commands[name]['method'](self, *args)
+		try:
+			self.commands[name]['method'](self, *args)
+		except Exception, e:
+			self.send_message('{0} failed: {1}'.format(name, str(e)))
 
 	def redux(self):
 		# Get new __all__; we have to reinvent the wheel because `from package
