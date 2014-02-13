@@ -4,9 +4,11 @@ from socket import socket
 from redis import StrictRedis
 from datetime import datetime
 from functools import partial
+from importlib import import_module
+import sys
+
 import commands
 from commands import registry
-import sys
 
 class Moose(object):
 
@@ -92,20 +94,21 @@ class Moose(object):
 		# Get new __all__; we have to reinvent the wheel because `from package
 		# import *` syntax only works at package level and not dynamically.
 		reload(commands)
-		# Reload registry
+		# Reload registry.
 		reload(commands.registry)
-		# Import or reload
+		# Import or reload all commands.
 		for command in commands.__all__:
-			if 'commands.' + command in sys.modules and sys.modules['commands.' + command]:
+			commandpath = 'commands.' + command
+			if commandpath in sys.modules and sys.modules[commandpath]:
 				try:
-					reload(sys.modules['commands.' + command])
+					reload(sys.modules[commandpath])
 				except ImportError, e:
-					self.send_message('Unable to reload command: ' + str(e))
+					self.send_message('unable to reload {0}: {1}'.format(command, str(e)))
 			else:
 				try:
-					__import__('commands', globals(), locals(), fromlist=[command])
+					import_module(commandpath)
 				except ImportError, e:
-					self.send_message('Unable to load command: ' + str(e))
+					self.send_message('unable to load {0}: {1}: '.format(command, str(e)))
 		self.commands = registry.commands
 
 	def serve_and_possibly_protect(self):
