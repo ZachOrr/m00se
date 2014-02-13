@@ -1,7 +1,5 @@
-# Command registry
-__all__ = ['registry']
 # Command modules
-__all__ += [
+__all__ = [
 'add',
 'calendar',
 'challs',
@@ -14,4 +12,5 @@ __all__ += [
 'leets',
 'purge',
 'seen',
+'redux',
 ]
