@@ -5,7 +5,7 @@ commands = {}
 
 def register(name, options):
     '''Register a command.'''
-    global registered
+    global commands
     commands[name] = options
 
 # vim: noet:nosta
