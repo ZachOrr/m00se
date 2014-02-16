@@ -58,3 +58,4 @@ other parameters passed will depend on the options you specify:
 * Write some unit tests to test features
 * Make redis/Github dependencies optional, but disable features
 * !leetest to show the leetest of them all
+* If !get doesn't have any new data since the last !get, don't make a new gist, just serve up the old link
