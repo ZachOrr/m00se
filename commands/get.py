@@ -26,12 +26,12 @@ def get(moose, username, challenge_name):
 			return
 		else:
 			name = challenge_name
-			try:
-				gist = create_gist(moose, name, loads(moose.redis_server.hget("challs", name)))
-				moose.send_message("%s" % gist)
-				update_seen(moose, username, name)
-			except GistException:
-				moose.send_message("Unable to create gist")
+	try:
+		gist = create_gist(moose, name, loads(moose.redis_server.hget("challs", name)))
+		moose.send_message("%s" % gist)
+		update_seen(moose, username, name)
+	except GistException:
+		moose.send_message("Unable to create gist")
 
 def create_gist(moose, problem_name, problem_info):
 	gist = {
