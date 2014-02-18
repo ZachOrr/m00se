@@ -4,9 +4,11 @@ import json
 from pickle import loads
 from deps.helpers import update_seen
 import requests
+from hashlib import md5
 
 @command("get", argc=1, text="!get [challenge_name] OR !get #[challenge_id] - Get a gist with all the info for a challenge", username=True)
 def get(moose, username, challenge_name):
+	name = ""
 	if challenge_name[0] == '#':
 		try:
 			challenge_number = int(challenge_name[1:])
@@ -18,21 +20,16 @@ def get(moose, username, challenge_name):
 			return
 		else:
 			name = [(i, s) for i, s in enumerate(moose.redis_server.hkeys("challs"))][challenge_number][1]
-			try:
-				gist = create_gist(moose, name, loads(moose.redis_server.hget("challs", name)))
-				moose.send_message("%s" % gist)
-				update_seen(moose, username, challenge_name)
-			except GistException:
-				moose.send_message("Unable to create gist")
 	else:
 		if not moose.redis_server.hexists("challs", challenge_name):
 			moose.send_message("%s is not a valid challenge name" % challenge_name)
 			return
 		else:
+			name = challenge_name
 			try:
-				gist = create_gist(moose, challenge_name, loads(moose.redis_server.hget("challs", challenge_name)))
+				gist = create_gist(moose, name, loads(moose.redis_server.hget("challs", name)))
 				moose.send_message("%s" % gist)
-				update_seen(moose, username, challenge_name)
+				update_seen(moose, username, name)
 			except GistException:
 				moose.send_message("Unable to create gist")
 
