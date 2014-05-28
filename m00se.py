@@ -23,7 +23,7 @@ class Moose(object):
 		# Pull in commands defined in package `commands`.
 		self.redux()
 		f = open("github_oauth_token", "r")
-		lines = f.readlines() 
+		lines = f.readlines()
 		if len(lines) < 1:
 		  raise Exception("No token in github_oauth_token!")
 		self.headers = {"Authorization": "token %s" % lines[0].strip(), "User-Agent": "ecxinc"}
@@ -118,7 +118,7 @@ class Moose(object):
 			if command == "PING":
 				self.irc.send("PONG " + data[1] + '\r\n')
 			elif command == "PRIVMSG":
-				if len(args[1]) > 0 and args[1][0][0] == "!":
+				if len(args[1][0]) > 0 and args[1][0][0] == "!":
 					self.handle_message(username, args[0].lower(), [x for x in args[1]])
 
 def main():
